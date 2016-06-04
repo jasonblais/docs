@@ -2,11 +2,15 @@
 
 This changelog summarizes updates to [Mattermost Team Edition](http://www.mattermost.org/), an open source team messaging solution released monthly under an MIT license, and [Mattermost Enterprise Edition](https://about.mattermost.com/pricing/), a commercial upgrade offering enterprise messaging for large organizations.
 
-## Release v3.0.2
+## Release v3.0.3
 
-Release date: 2016-05-17
+Release date: 2016-05-27
 
 Notes on patch releases: 
+- v3.0.3, released 2016-05-27
+   - Fixed an error with LDAP signup if user already existed.
+   - Fixed an error where setting language to one of the supported langugages caused a blank page.
+   - Fixed an error where upgrading team admins on the primary team with LDAP/Gitlab accounts caused an error.
 - v3.0.2, released 2016-05-17
    - Security update to reduce information disclosure, thanks to Andreas Lindh for [reporting responsibly](http://www.mattermost.org/responsible-disclosure-policy/)
    - Fixed an error where, when using Postgres, attempting to log in with an LDAP that has the same email address or username as an email-based account shows a confusing error message.
@@ -19,7 +23,7 @@ Notes on patch releases:
 
 ### Security Update
 
-- Mattermost v3.0.2 contains multiple security updates. [Upgrading to Mattermost v3.0.2](http://docs.mattermost.com/administration/upgrade.html#upgrading-to-team-edition-3-0-x-from-2-x) is highly recommended. 
+- Mattermost v3.0.3 contains multiple security updates. [Upgrading to Mattermost v3.0.3](http://docs.mattermost.com/administration/upgrade.html#upgrading-to-team-edition-3-0-x-from-2-x) is highly recommended. 
 - Thanks to Yoni Ramon from the Tesla security team, Andreas Lindh and Uchida Ta for contributing security reports through the [Mattermost Responsible Disclosure Policy](https://www.mattermost.org/responsible-disclosure-policy/). 
 
 ### Major Version Release 

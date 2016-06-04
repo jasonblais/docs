@@ -29,7 +29,9 @@ For deployments seeking additional tracking of system behavior using Segment.com
 
 **Google Developer Key** (`"GoogleDeveloperKey": ""`)  
 
-Mattermost offers the ability to embed YouTube videos from URLs shared by end users. If Google detects the number of views is exceedingly high, they may throttle embed access. Should this occur, you can remove the throttle by registering for a Google Developer Key and entering it in this field following these instructions: https://www.youtube.com/watch?v=Im69kzhpR3I. Your Google Developer Key is used in client-side Javascript. 
+Mattermost offers the ability to embed YouTube videos from URLs shared by end users. If Google detects the number of views is exceedingly high, they may throttle embed access. Should this occur, you can remove the throttle by registering for a Google Developer Key and entering it in this field following these instructions: https://www.youtube.com/watch?v=Im69kzhpR3I. Your Google Developer Key is used in client-side Javascript.
+
+Using a Google Developer Key allows Mattermost to detect when a video is no longer available and display the post with a *Video not found* label.
 
 **Enable Testing** (`"EnableTesting": false`)  
 
@@ -308,6 +310,12 @@ Settings to configure storage, appearance, and security of files and images.
 
 #### File Storage
 
+_Available in June 16, 2016 release_
+
+**Maximum File Size** (`"MaxFileSize": "52428800"`)
+
+Used to adjust the MAX_FILE_SIZE for message attachments.
+
 **Store Files In** (`"DriverName": "local"`)  
 
 System used for file storage. “local”: Files and images are stored on the local file system. “amazons3”: Files and images are stored on Amazon S3 based on the provided access key, bucket and region fields.
@@ -510,20 +518,22 @@ The domain or IP address of the LDAP server.
 
 **LDAP Port** (`"LdapPort": 389`)    
 
-The port Mattermost will use to connect to the LDAP server. Default is 389.
+The port Mattermost will use to connect to the AD/LDAP server. Default is 389.
 
 **Connection Security** (`"ConnectionSecurity": ""`) 
 
-The type of connection security Mattermost uses to connect to LDAP.      
-`""`: No security, Mattermost will connect over an unsecure connection; `TLS`: Encrypts the communication between Mattermost and your server using TLS; `STARTTLS`: Takes an existing insecure connection and attempts to upgrade it to a secure connection using TLS.    
+The type of connection security Mattermost uses to connect to LDAP. 
+`""`: No encryption, Mattermost will not attempt to establish an encrypted connection to the LDAP server; `TLS`: Encrypts the communication between Mattermost and your server using TLS; `STARTTLS`: Takes an existing insecure connection and attempts to upgrade it to a secure connection using TLS. 
+
+If the "No encryption" option is selected it is highly recommended that the LDAP connection is secured outside of Mattermost, for example, by adding a stunnel proxy. 
 
 **Base DN** (`"BaseDN": ""`)    
 
-The Base DN is the Distinguished Name of the location where Mattermost should start its search for users in the LDAP tree.
+The **Base DN** is the _Base Distinguished Name_ of the location where Mattermost should start its search for users in the LDAP tree.
 
 **Bind Username** (`"BindUsername": ""`)  
 
-The username used to perform the LDAP search. This should typically be an account created specifically for use with Mattermost. It should be a read only account with access limited to the portion of the LDAP tree specified in the BaseDN field. Bind username should specify domain in `DOMAIN/username` format. 
+The username used to perform the AD/LDAP search. This should be an account created specifically for use with Mattermost  Its permissions should be limited to read-only access to the portion of the LDAP tree specified in the **Base DN** field. When using Active Directory, **Bind Username** should specify domain in `DOMAIN/username` format. 
 
 **Bind Password** (`"BindPassword": ""`)  
 
@@ -532,6 +542,8 @@ Password of the user given in “Bind Username”.
 **User Filter** (`"UserFilter": ""`)  
 
 Optionally enter an LDAP Filter to use when searching for user objects (accepts [general syntax](http://www.ldapexplorer.com/en/manual/109010000-ldap-filter-syntax.htm)). Only the users selected by the query will be able to access Mattermost. For Active Directory, the query to filter out disabled users is `(&(objectCategory=Person)(!(UserAccountControl:1.2.840.113556.1.4.803:=2)))`. 
+
+This filter uses the permissions of the **Bind Username** account to execute the search. Administrators should make sure to use a specially created account for Bind Username with read-only access to the portion of the LDAP tree specified in the **Base DN** field. 
 
 **First Name Attribute** (`"FirstNameAttribute": ""`)  
 
@@ -547,19 +559,23 @@ The attribute in the LDAP server that will be used to populate the last name of 
 
 **Email Attribute** (`"EmailAttribute": ""`)  
 
-The attribute in the LDAP server that will be used to populate the email addresses of users in Mattermost.
+The attribute in the LDAP server that will be used to populate the email addresses of users in Mattermost. 
+
+Email notifications will be sent to this email address, and this email address may be viewable by other Mattermost users depending on privacy settings choosen by the System Administrator. 
 
 **Username Attribute** (`"UsernameAttribute": ""`)  
 
-The attribute in the LDAP server that will be used to populate the username field in Mattermost. This may be the same as the ID Attribute.
+**The attribute in the LDAP server that will be used to populate the username field in Mattermost user interface.** This attribute will be used within the Mattermost user interface to identify and mention users. For example, if a Username Attribute is set to **john.smith** a user typing `@john` will see `@john.smith` in their auto-complete options and posting a message with `@john.smith` will send a notification to that user that they've been mentioned. 
+
+The **Username Attribute** may be set to the same value used to sign-in to the system, called an **ID Attribute**, or it can be mapped to a different value. 
 
 **ID Attribute** (`"IdAttribute": ""`)  
 
-The attribute in the LDAP server that will be used as a unique identifier in Mattermost.
+The attribute in the LDAP server that will be used as a unique identifier in Mattermost. It serves two purposes: 
 
-This is the attribute that will be used to create Mattermost accounts. It should be an LDAP attribute with a value that does not change, such as username or uid. If a user’s Id Attribute changes, it will create a new Mattermost account unassociated with their old one. 
+**This value is used to sign in to Mattermost in the “LDAP Username” field on the sign in page.** This attribute can be the same as the **Username Attribute** field above, which is what is used to identify users in the Mattermost interface, or it can be a different value, for example a User ID number. If your team typically uses `DOMAIN\username` to sign in to other services with LDAP, you may enter a field name that maps to `DOMAIN\username` to maintain consistency between sites.
 
-This is also the value used to log in to Mattermost in the “LDAP Username” field on the sign in page. Normally this attribute is the same as the “Username Attribute” field above. If your team typically uses domain\username to sign in to other services with LDAP, you may choose to put domain\username in this field to maintain consistency between sites.
+**This is the attribute that will be used to create unique Mattermost accounts.** This attribute should be an LDAP attribute with a value that does not change, such as `username` or `uid`. If a user’s **ID Attribute** changes and the user attempts to login the Mattermost server will attempt to create a new Mattermost user account based on the new **ID Attribute** and fail since new Mattermost users accounts can't be created with duplicate email addresses or Mattermost usernames (as defined in the **Username Attribute**).  
 
 **Skip Certificate Verification** (`"SkipCertificateVerification": false`)  
 
